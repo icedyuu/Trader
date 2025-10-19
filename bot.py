@@ -5,6 +5,25 @@ import discord
 from discord import app_commands
 from dotenv import load_dotenv
 
+# --- KEEP ALIVE SERVER ---
+import os
+from flask import Flask
+from threading import Thread
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Bot is running!"
+
+def run():
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
+
+def keep_alive():
+    t = Thread(target=run, daemon=True)
+    t.start()
+
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 GUILD_ID = os.getenv("GUILD_ID")
@@ -349,4 +368,7 @@ async def sync_cmd(interaction: discord.Interaction):
         synced = await client.tree.sync()
     await interaction.followup.send(f"🔄 {len(synced)} Commands synchronisiert.", ephemeral=True)
 
-client.run(TOKEN)
+if __name__ == "__main__":
+    keep_alive()
+    client.run(TOKEN)
+
